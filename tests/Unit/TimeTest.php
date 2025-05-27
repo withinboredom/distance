@@ -1,7 +1,10 @@
 <?php
 
-use Withinboredom\Time\Time;
-use Withinboredom\Time\TimeUnit;
+
+use Withinboredom\Time;
+use Withinboredom\Time\SerdeExporter;
+use Withinboredom\Time\TimeAs;
+use Withinboredom\Time\Unit;
 
 use function Withinboredom\Time\Days;
 use function Withinboredom\Time\Hours;
@@ -15,7 +18,7 @@ use function Withinboredom\Time\Weeks;
 test('unit', function (Time $time, int $week) {
     expect($time)
         ->toBe(Weeks(1))
-        ->and($time->as(TimeUnit::Weeks))->toBe(1.0);
+        ->and($time->as(Unit::Weeks))->toBe(1.0);
 })->with([
     'weeks' => [Weeks(1), 1],
     'days' => [Days(7), 7],
@@ -47,10 +50,10 @@ test("Date intervals work", function () {
 
     $interval = $var->toDateInterval();
 
-    expect($var->as(TimeUnit::Seconds))
+    expect($var->as(Unit::Seconds))
         ->toBe(694861.0)
         ->and($now->add($interval))->toEqual($expected)
-        ->and($var->as(TimeUnit::Seconds))->toBe(694861.0);
+        ->and($var->as(Unit::Seconds))->toBe(694861.0);
 });
 
 it('cannot be serialized', function () {
@@ -68,11 +71,28 @@ it('can be compared', function () {
     $left = Seconds(1);
     $right = Seconds(5);
 
-    expect(Time::from(TimeUnit::Seconds, 1) < Time::from(TimeUnit::Milliseconds, 1))
+    expect(Time::from(Unit::Seconds, 1) < Time::from(Unit::Milliseconds, 1))
         ->toBeFalse()
         ->and($left < $middle)
         ->toBeTrue()
         ->and($right > $middle)->toBeTrue()
         ->and($left < $right)->toBeTrue()
         ->and($left > $middle)->toBeFalse();
+});
+
+it('works with serde', function () {
+    if (!class_exists(\Crell\Serde\Serde::class)) {
+        $this->markTestSkipped();
+    }
+
+    $serde = new \Crell\Serde\SerdeCommon(handlers: [new SerdeExporter()]);
+    $class = new class (Minutes(1)) {
+        public function __construct(#[TimeAs(Unit::Seconds)] public Time $seconds) {}
+    };
+    $json = $serde->serialize($class, 'json');
+    expect($json)
+        ->toBeJson()
+        ->and($json)->json()->toBe(['seconds' => 60]);
+    $class = $serde->deserialize($json, 'json', get_class($class));
+    expect($class->seconds)->toBe(Seconds(60));
 });

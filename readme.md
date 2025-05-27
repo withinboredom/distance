@@ -1,35 +1,75 @@
-# A really simple library for converting time
+# An advanced library offering type safety and identity with Durations
 
-This is a simple library for interacting with time durations.
-You can write your code to expect time and know that is what you have:
+## Identity
+
+This library uses some tricks to intern values so that two times are always equal to one another,
+no matter the distance in time or space.
 
 ```php
-function sleep(\Withinboredom\Time\Time $time): void {
-    \sleep($time->as(\Withinboredom\Time\TimeUnit::Seconds));
+use Withinboredom\Time;
+use Withinboredom\Time\Unit;
+
+$hour = Time::from(Unit::Hours, 1);
+$minutes = Time::from(Unit::Minutes, 60);
+
+echo $hour === $minutes ? 'true' : 'false'
+// outputs: true
+```
+
+## Type Safety
+
+You can ensure nobody will accidentally confuse seconds with milliseconds or minutes with seconds:
+
+```php
+function sleep(Time $time): void {
+    \sleep($time->as(Unit::Seconds));
 }
 
-sleep(\Withinboredom\Time\Minutes(5));
+// Helper functions are included so you can type less code:
+sleep(Minutes(5));
 ```
 
-## Equality
+## Conversions and Math
 
-All values of the same time are always strongly equaled to each other:
+You can easily convert between units and even perform operations, like sorting and arithmetic:
 
 ```php
-\Withinboredom\Time\Minutes(60) === \Withinboredom\Time\Hours(1)
+// use the hour constant to get one hour
+$hour = Hour;
+
+$hour = $hour->multiply(10)->add(Minutes(10)); // get 10:10 hours
+
+$interval = $hour->toDateInterval();
+
+echo Hours(10) < $hour ? 'true' : 'false';
+// output: true
 ```
 
-## Utilities
+## Support for Crell\Serde
 
-There are also a few utility methods:
+You cannot serialize/deserialize/clone `Time` objects.
+However, if you use something like Serde, you can still serialize your value objects:
 
-> ->add(Time)->subtract(Time): AnyTime
+```php
+class CacheItem {
+    public function __construct(
+        #[Field('expiration_in_seconds')]
+        #[TimeAs(Unit::Seconds)]
+        public Time $expiration,
+    ) {}
+}
 
-Add and subtract durations.
+$serde = new SerdeCommon(handlers: new \Withinboredom\Time\SerdeExporter());
+$serde->serialize(new CacheItem(Minutes(5)), 'json');
+```
 
-> ->toDateInterval(): DateInterval
+The above will be serialized (and deserialized) from:
 
-Creates a date interval for use in other things.
+```json
+{
+    "expiration_in_seconds": 300
+}
+```
 
 ## Units
 
@@ -45,7 +85,7 @@ Creates a date interval for use in other things.
 
 > Why not months/years?
 
-There's no set days in a month/year, so it’s better to use `DateInterval` for those types of measures.
+There are no set days in a month/year, so it’s better to use `DateInterval` for those types of measures.
 
 > Why does this exist?
 

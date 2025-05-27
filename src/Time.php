@@ -1,8 +1,9 @@
 <?php
 
-namespace Withinboredom\Time;
+namespace Withinboredom;
 
 use WeakReference;
+use Withinboredom\Time\Unit;
 
 final class Time
 {
@@ -28,17 +29,17 @@ final class Time
 
     private function __construct(private readonly int $nanoseconds)
     {
-        if($this->nanoseconds < 0) {
+        if ($this->nanoseconds < 0) {
             throw new \InvalidArgumentException('Time cannot be negative');
         }
     }
 
-    public static function from(TimeUnit $unit, float $value): Time
+    public static function from(Unit $unit, float $value): Time
     {
         return self::getValue($unit->value * $value);
     }
 
-    public function as(TimeUnit $unit): float
+    public function as(Unit $unit): float
     {
         return $this->nanoseconds / $unit->value;
     }
@@ -65,11 +66,11 @@ final class Time
 
     private function components(): array
     {
-        $weeks = (int) $this->as(TimeUnit::Weeks);
-        $days = (int) $this->as(TimeUnit::Days) - $weeks * 7;
-        $hours = (int) $this->as(TimeUnit::Hours) - $weeks * 7 * 24 - $days * 24;
-        $minutes = (int) $this->as(TimeUnit::Minutes) - $weeks * 7 * 24 * 60 - $days * 24 * 60 - $hours * 60;
-        $seconds = (int) $this->as(TimeUnit::Seconds) - $weeks * 7 * 24 * 60 * 60 - $days * 24 * 60 * 60 - $hours * 60 * 60 - $minutes * 60;
+        $weeks = (int) $this->as(Unit::Weeks);
+        $days = (int) $this->as(Unit::Days) - $weeks * 7;
+        $hours = (int) $this->as(Unit::Hours) - $weeks * 7 * 24 - $days * 24;
+        $minutes = (int) $this->as(Unit::Minutes) - $weeks * 7 * 24 * 60 - $days * 24 * 60 - $hours * 60;
+        $seconds = (int) $this->as(Unit::Seconds) - $weeks * 7 * 24 * 60 * 60 - $days * 24 * 60 * 60 - $hours * 60 * 60 - $minutes * 60;
 
         return [$weeks, $days, $hours, $minutes, $seconds];
     }

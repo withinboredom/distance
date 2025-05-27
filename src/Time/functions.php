@@ -2,44 +2,46 @@
 
 namespace Withinboredom\Time;
 
+use Withinboredom\Time;
+
 function Nanoseconds(float $time): Time
 {
-    return Time::from(TimeUnit::Nanoseconds, $time);
+    return Time::from(Unit::Nanoseconds, $time);
 }
 
 function Microseconds(float $time): Time
 {
-    return Time::from(TimeUnit::Microseconds, $time);
+    return Time::from(Unit::Microseconds, $time);
 }
 
 function Milliseconds(float $time): Time
 {
-    return Time::from(TimeUnit::Milliseconds, $time);
+    return Time::from(Unit::Milliseconds, $time);
 }
 
 function Seconds(float $time): Time
 {
-    return Time::from(TimeUnit::Seconds, $time);
+    return Time::from(Unit::Seconds, $time);
 }
 
 function Minutes(float $time): Time
 {
-    return Time::from(TimeUnit::Minutes, $time);
+    return Time::from(Unit::Minutes, $time);
 }
 
 function Hours(float $time): Time
 {
-    return Time::from(TimeUnit::Hours, $time);
+    return Time::from(Unit::Hours, $time);
 }
 
 function Days(float $time): Time
 {
-    return Time::from(TimeUnit::Days, $time);
+    return Time::from(Unit::Days, $time);
 }
 
 function Weeks(float $time): Time
 {
-    return Time::from(TimeUnit::Weeks, $time);
+    return Time::from(Unit::Weeks, $time);
 }
 
 define('Nanosecond', Nanoseconds(1));
