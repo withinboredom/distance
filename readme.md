@@ -1,91 +1,104 @@
-# An advanced library offering type safety and identity with Durations
+# An advanced library offering type safety and identity with Distance
 
 ## Identity
 
-This library uses some tricks to intern values so that two times are always equal to one another,
+This library uses some tricks to intern values so that two distances are always equal to one another,
 no matter the distance in time or space.
 
 ```php
-use Withinboredom\Time;
-use Withinboredom\Time\Unit;
+use Withinboredom\Distance;
+use Withinboredom\Distance\Unit;
 
-$hour = Time::from(Unit::Hours, 1);
-$minutes = Time::from(Unit::Minutes, 60);
+$meter = Distance::from(Unit::Meters, 1);
+$centimeters = Distance::from(Unit::Centimeters, 100);
 
-echo $hour === $minutes ? 'true' : 'false'
+echo $meter === $centimeters ? 'true' : 'false'
 // outputs: true
 ```
 
 ## Type Safety
 
-You can ensure nobody will accidentally confuse seconds with milliseconds or minutes with seconds:
+You can ensure nobody will accidentally confuse inches with centimeters or Nautical Miles with Miles:
 
 ```php
-function sleep(Time $time): void {
-    \sleep($time->as(Unit::Seconds));
-}
+function moveForward(Distance $distance) { /* move */ }
 
-// Helper functions are included so you can type less code:
-sleep(Minutes(5));
+moveForward(Distance::from(Unit::Miles, 10));
 ```
 
 ## Conversions and Math
 
-You can easily convert between units and even perform operations, like sorting and arithmetic:
+You can convert between units and even perform operations, like sorting and arithmetic:
 
 ```php
-// use the hour constant to get one hour
-$hour = Hour;
+$meter = Meters(1);
 
-$hour = $hour->multiply(10)->add(Minutes(10)); // get 10:10 hours
+$meter = $meter->multiply(10)->add(Inches(10)); // get 10 meters and 10 inches
 
-$interval = $hour->toDateInterval();
-
-echo Hours(10) < $hour ? 'true' : 'false';
+echo Centimeters(10) < $meter ? 'true' : 'false';
 // output: true
 ```
 
 ## Support for Crell\Serde
 
-You cannot serialize/deserialize/clone `Time` objects.
+You cannot serialize/deserialize/clone `Distance` objects.
 However, if you use something like Serde, you can still serialize your value objects:
 
 ```php
-class CacheItem {
+class Robot {
     public function __construct(
-        #[Field('expiration_in_seconds')]
-        #[TimeAs(Unit::Seconds)]
-        public Time $expiration,
+        #[Field('height_in_centimeters')]
+        #[TimeAs(Unit::Centimeters)]
+        public Distance $height,
     ) {}
 }
 
-$serde = new SerdeCommon(handlers: new \Withinboredom\Time\SerdeExporter());
-$serde->serialize(new CacheItem(Minutes(5)), 'json');
+$serde = new SerdeCommon(handlers: new \Withinboredom\Distance\SerdeExporter());
+$serde->serialize(new Robot(Meters(5)), 'json');
 ```
 
 The above will be serialized (and deserialized) from:
 
 ```json
 {
-    "expiration_in_seconds": 300
+    "height_in_centimeters": 500
 }
 ```
 
 ## Units
 
-- Nanoseconds
-- Microseconds
-- Milliseconds
-- Minutes
-- Hours
-- Days
-- Weeks
+There are several distance units supported
+
+### SI Units
+
+- Micrometers
+- Millimeters
+- Centimeters
+- Meters
+- Kilometers
+
+### Imperial Units
+
+- Inches
+- Feet
+- Yards
+- Miles
+- Furlongs
+
+### Misc.
+
+- Nautical Miles
+- Astronomical Units
 
 ## FAQ
 
-> Why not months/years?
+> How far can I go?
 
-There are no set days in a month/year, so it’s better to use `DateInterval` for those types of measures.
+The base unit is in micrometers, so on a 64-bit system you can go ~60AU with micrometer accuracy.
+For reference, Pluto is usually about 40 AU away from the sun.
+
+If you are limited to 32-bit systems, this is not for you.
+The maximum distance on a 32-bit system is just a couple of meters.
 
 > Why does this exist?
 
