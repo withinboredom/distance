@@ -48,7 +48,7 @@ However, if you use something like Serde, you can still serialize your value obj
 class Robot {
     public function __construct(
         #[Field('height_in_centimeters')]
-        #[TimeAs(Unit::Centimeters)]
+        #[DistanceAs(Unit::Centimeters)]
         public Distance $height,
     ) {}
 }
